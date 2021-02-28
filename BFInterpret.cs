@@ -49,11 +49,13 @@ namespace BFInterpret // Create the namespace, which will be defined within othe
                 }
                 else if (BrainfuckCode[StringPointer] == '[') // If the current character in the brainfuck code is an opening bracket, run the following code.
                 {
-                    if (Cells[Pointer] == 0) StringPointer = VerifyPairOfBrackets("Right"); // If the value of the current cell is 0, set the string pointer to the closing bracket.
+                    int ValueOfBracket = VerifyPairOfBrackets("Right"); // Place this outside of the if statement, since this will also be used to check if the pair of brackets is valid.
+                    if (Cells[Pointer] == 0) StringPointer = ValueOfBracket; // If the value of the current cell is 0, set the string pointer to the closing bracket.
                 }
                 else if (BrainfuckCode[StringPointer] == ']')
                 {
-                    if (Cells[Pointer] != 0) StringPointer = VerifyPairOfBrackets("Left"); // If the value of the current cell is not 0, set the string pointer to the opening bracket.
+                    int ValueOfBracket = VerifyPairOfBrackets("Left"); // Place this outside of the if statement, since this will also be used to check if the pair of brackets is valid.
+                    if (Cells[Pointer] != 0) StringPointer = ValueOfBracket; // If the value of the current cell is not 0, set the string pointer to the opening bracket.
                 }
                 StringPointer++; // Increment the StringPointer value.
             }
