@@ -1,17 +1,43 @@
-﻿// Made by Quevidia.
+// Made by Quevidia.
 // 2021
 
 using System;
 
 namespace BFInterpret // Create the namespace, which will be defined within other scripts.
 {
-    public class BF // Create the main class itself.
+    public static class BF // Create the main class itself.
     {
         class MissingBracket : Exception { } // Create an exception that will be thrown when the Brainfuck code contains missing brackets.
 
-        public static string InterpretCode(string BrainfuckCode, string UserInput = null) // Create the main method which is what the user would be wanting to aim for in their code. This method will return a string.
+        static bool IsPrime(this int Number) // Create a small method that will check whether a number is a prime number or not. This is an extension method thus it will be used as a method for objects of integer type.
         {
-            if (UserInput == null || UserInput == "") UserInput = " "; // Define a whitespace string for UserInput if this argument has not been specified when calling BF.InterpretCode.
+            Number = Math.Abs(Number); // Get the absolute value of Number, then set its value to Number.
+            if (Number == 0 || Number == 1) return false; // Return false if Number is 0 or 1, since these are not prime numbers.
+            if (Number == 2) return true; // Two is a prime number, so if Number is 2, return true.
+            for (int i = 3; i <= Math.Ceiling(Math.Sqrt(Number)); i++) // Make a for loop that will range between 3 and the square root of Number rounded to the nearest larger integer.
+            {
+                if (Number % i == 0) return false; // Check if number modulo i equals to 0. If so, return false, since this means that this number is not a prime number and it can be divided by a number asides from 1 and itself.
+            }
+            return true; // This will only be reached if the for loop did not return false whatsoever. If the code did get to this point, then simply return true.
+        }
+
+        static int[] GetTwoNumbersToMakeUp(this int Number) // Create a small method that will generate two numbers that can make up the number provided as the argument for this method.
+        {
+            int FirstNumber = 1; int SecondNumber = Number; int Count = 1; // Create two variables that will essentially be used for returning back to methods that have called this method, then create a Count variable that will have the same value as FirstNumber if it were incremented every time in the following while loop.
+            while (Count <= Number / Count) // Create a while loop that will continue going until Count is larger than Number divided by Count.
+            {
+                if ((Number / Count) * Count == Number)
+                {
+                    FirstNumber = Count; SecondNumber = Number / FirstNumber; // Set FirstNumber's value to be the same as Count, then set SecondNumber's value to to be Number / FirstNumber.
+                }
+                Count++; // Increment Count.
+            }
+            return new int[] { FirstNumber, SecondNumber } ; // Return the values of FirstNumber and SecondNumber in an array of int type!
+        }
+
+        public static string InterpretCode(string BrainfuckCode, string UserInput = null) // Create the method responsible for interpreting all of the Brainfuck code. This will return a string consisting of the output.
+        {
+            if (UserInput == null) UserInput = ""; // Define an empty string for UserInput if this argument has not been specified when calling BF.InterpretCode.
 
             // Make all base variables.
             byte[] Cells = new byte[30000]; // Initiate an array of cells, each holding byte values.
@@ -68,6 +94,51 @@ namespace BFInterpret // Create the namespace, which will be defined within othe
             }
             catch (IndexOutOfRangeException) { Output = "Memory overflow. Please check your code and see if your cells have been used incorrectly."; } // If the IndexOutOfRangeException exception has been catched, set the output to tell the user that a memory overflow has occurred.
             catch (MissingBracket) { Output = "A pair of brackets contains a missing bracket. Please check your code and see if additional brackets are requipred for your loops."; } // If the MissingBracket exception has been catched, set the output to tell the user that a pair of brackets is still open.
+            return Output; // Return the final output.
+        }
+
+        public static string ASCIItoBF(string ASCII) // Create a method that will convert 8-bit ASCII text into Brainfuck code. This will return a string consisting of the final Brainfuck code.
+        {
+            // Make all of the base values.
+            string Output = ""; // Create a variable of string type responsible for holding the final Brainfuck code.
+            int DecimalValue = 0; // Create a variable of integer type that will hold the decimal value for the cell being used.
+            bool FirstTryGone = false; // Create a variable of boolean type that will depict whether the first letter has been done already or not.
+
+            foreach (char Char in ASCII) // Loop through every character in the ASCII string.
+            {
+                if (Char > 255) return "The string that you have inputted contains non-ASCII characters."; // Check if the integer value of Char is larger than 255. If so, return a string saying that the string contains a character that is not an ASCII character.
+                int Difference = Char - DecimalValue; // Set Difference to be DecimalValue subtracted from Char.
+
+                if (Math.Abs(Difference) <= 10) // Check if the absolute value of Difference is equal to or smaller than 10.
+                {
+                    if (Difference == Math.Abs(Difference)) Output = Output + new string('+', Difference); // If Difference is the same as the absolute value of Difference, concatenate Output with + times Difference.
+                    else Output = Output + new string('-', Math.Abs(Difference)); // Concatenate Output with - times the absolute value of Difference.
+                }
+                else
+                {
+                    int NonPrimeDecimalValue = Char; // Get the decimal value of Char and assign its value to a variable of integer type called NonPrimeDecimalValue.
+                    if (FirstTryGone) Output = Output + "[-]<"; // If FirstTryGone is true, concatenate output with [-]<. What this does is clear out the cell that is currently being pointed at, then move the pointer to the previous cell.
+
+                    while (NonPrimeDecimalValue.IsPrime()) // Make a while loop that will loop through the code in its scope if NonPrimeDecimalValue.IsPrime() returns true.
+                    {
+                        NonPrimeDecimalValue++; // Increment NonPrimeDecimalValue.
+                    }
+
+                    int[] NumbersToMultiply = NonPrimeDecimalValue.GetTwoNumbersToMakeUp(); // Create an array of integer type that will hold the values of NonPrimeDecimalValue.GetTwoNumbersToMakeUp();
+                    int CountDown = 0; // Create a variable of integer type that will hold the value responsible for the amount of increments used for the character being converted to Brainfuck code after the Brainfuck loop has gone by.
+
+                    while (Char != NonPrimeDecimalValue) // Create a loop that will continue until Char is the same as NonPrimeDecimalValue.
+                    {
+                        NonPrimeDecimalValue--; CountDown++; // Decrement NonPrimeDecimalValue and then increment CountDown.
+                    }
+
+                    Output = Output + $"{new string('+', NumbersToMultiply[0])}[>{new string('+', NumbersToMultiply[1])}<-]>{new string('-', CountDown)}"; // Concatenate Output with (+ times NumbersToMultiply[0])([>)(+ times NumbersToMultiply[1])(<-]>)(- times CountDown). This will increment the value of the first cell NumbersToMultiply[0] times, then create a loop that will jump to the next cell, increment its value NumbersToMultiply[1] times, go to the previous cell, decrement its value once, then end the loop. After the loop, it will jump to the next cell and then decrement its value CountDown times.
+                }
+
+                Output = Output + "."; // Concatenate Output with .. This will be responsible for outputting the ASCII data of the value of the current cell.
+                DecimalValue = Char; FirstTryGone = true; // Set DecimalValue to hold the value of Char, then set FirstTryGone to true.
+            }
+
             return Output; // Return the final output.
         }
     }
