@@ -1,3 +1,5 @@
+## DO NOT USE THIS. If you want to use my Brainfuck interpreter, please use this instead: https://github.com/Quevidia/Optimising-Brainfuck-interpreter
+
 # BFInterpret
 
 BFInterpret, a basic Brainfuck interpreter written in C#! Hope you enjoy!
